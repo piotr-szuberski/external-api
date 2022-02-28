@@ -51,12 +51,12 @@ class PetControllerTest extends Specification {
     response.status == 400
 
     where:
-    kind      | name    | birthDate | caregiver
-    'invalid' | 'Tofik' | pastDate  | 'id'
-        validKind | '   '   | pastDate   | 'id'
-        validKind | 'Tofik' | futureDate | 'id'
-        validKind | 'Tofik' | pastDate   | '  '
-        validKind | 'Tofik' | futureDate | '  '
+    kind      | name    | birthDate  | caregiver
+    'invalid' | 'Tofik' | pastDate   | 'id'
+    validKind | '   '   | pastDate   | 'id'
+    validKind | 'Tofik' | futureDate | 'id'
+    validKind | 'Tofik' | pastDate   | '  '
+    validKind | 'Tofik' | futureDate | '  '
   }
 
   def "Should receive ok response"() {

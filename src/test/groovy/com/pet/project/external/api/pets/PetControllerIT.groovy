@@ -6,12 +6,10 @@ import com.pet.project.external.api.error.ErrorCode
 import com.pet.project.external.api.error.ErrorDto
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
-import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -58,8 +56,8 @@ class PetControllerIT extends Specification {
     fields.each { response.getContentAsString().contains(it) }
 
     where:
-    kind      | name    | birthDate | caregiver | fields
-    'invalid' | 'Tofik' | pastDate  | 'id'      | ['kind']
+    kind      | name    | birthDate  | caregiver | fields
+    'invalid' | 'Tofik' | pastDate   | 'id'      | ['kind']
     validKind | '   '   | pastDate   | 'id'      | ['kind']
     validKind | 'Tofik' | futureDate | 'id'      | ['name']
     validKind | 'Tofik' | pastDate   | '  '      | ['caregiver']

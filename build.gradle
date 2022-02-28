@@ -81,15 +81,15 @@ spotless {
   java {
     importOrder()
     removeUnusedImports()
-    trimTrailingWhitespace()
     googleJavaFormat().reflowLongStrings()
+    trimTrailingWhitespace()
     endWithNewline()
   }
   groovy {
-    importOrder()
     excludeJava()
     greclipse()
     indentWithSpaces(2)
+    importOrder()
     trimTrailingWhitespace()
     endWithNewline()
   }
