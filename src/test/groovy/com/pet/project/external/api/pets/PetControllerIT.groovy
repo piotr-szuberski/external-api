@@ -2,18 +2,23 @@ package com.pet.project.external.api.pets
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.pet.project.external.api.config.JacksonConfiguration
-import com.pet.project.external.api.interceptors.ExceptionHandlerAdvice
+import com.pet.project.external.api.error.ErrorCode
+import com.pet.project.external.api.error.ErrorDto
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.LocalDateTime
 
-class PetControllerTest extends Specification {
+@WebMvcTest(controllers = [PetController])
+class PetControllerIT extends Specification {
 
   static path = '/api/v1/pets'
 
@@ -22,19 +27,14 @@ class PetControllerTest extends Specification {
   static pastDate = LocalDateTime.of(2022, 2, 20, 4, 23, 0)
   static futureDate = pastDate.withYear(3100)
 
+  @Autowired
   MockMvc mvc
 
-  @Shared
+  @Autowired
   static ObjectMapper mapper = new JacksonConfiguration().objectMapper()
 
-  def setup() {
-    mvc = MockMvcBuilders.standaloneSetup(new PetController())
-            .setMessageConverters(new MappingJackson2HttpMessageConverter(mapper))
-            .setControllerAdvice(new ExceptionHandlerAdvice())
-            .build()
-  }
-
-  def "Should receive error response"() {
+  @Unroll
+  def "Should receive error response for invalid fields #fields"() {
     when:
     def response = mvc.perform(MockMvcRequestBuilders.put("$path/$validId")
             .contentType(MediaType.APPLICATION_JSON)
@@ -44,19 +44,26 @@ class PetControllerTest extends Specification {
                 "birthDate": "$birthDate",
                 "caregiver": "$caregiver"
             }"""))
+            .andDo(MockMvcResultHandlers.print())
             .andReturn()
             .getResponse()
 
     then:
     response.status == 400
 
+    and:
+    def errorDto = mapper.readValue(response.getContentAsString(), ErrorDto)
+    errorDto.errors.size() == fields.size()
+    errorDto.code == ErrorCode.INPUT_VALIDATION_ERROR
+    fields.each { response.getContentAsString().contains(it) }
+
     where:
-    kind      | name    | birthDate | caregiver
-    'invalid' | 'Tofik' | pastDate  | 'id'
-        validKind | '   '   | pastDate   | 'id'
-        validKind | 'Tofik' | futureDate | 'id'
-        validKind | 'Tofik' | pastDate   | '  '
-        validKind | 'Tofik' | futureDate | '  '
+    kind      | name    | birthDate | caregiver | fields
+    'invalid' | 'Tofik' | pastDate  | 'id'      | ['kind']
+    validKind | '   '   | pastDate   | 'id'      | ['kind']
+    validKind | 'Tofik' | futureDate | 'id'      | ['name']
+    validKind | 'Tofik' | pastDate   | '  '      | ['caregiver']
+    validKind | 'Tofik' | futureDate | '  '      | ['caregiver', 'birthDate']
   }
 
   def "Should receive ok response"() {
@@ -69,6 +76,7 @@ class PetControllerTest extends Specification {
                 "birthDate": "$pastDate",
                 "caregiver": $caregiver
             }"""))
+            .andDo(MockMvcResultHandlers.print())
             .andReturn()
             .getResponse()
 

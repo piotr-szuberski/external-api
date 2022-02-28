@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version '3.0.0-SNAPSHOT'
+	id 'org.springframework.boot' version '2.6.4'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'org.asciidoctor.convert' version '1.5.8'
 	id 'java'
@@ -37,8 +37,10 @@ dependencies {
 
 	// spock
 	testImplementation "org.codehaus.groovy:groovy:3.0.9"
+	testImplementation 'org.codehaus.groovy:groovy-json:3.0.9'
 	testImplementation platform("org.spockframework:spock-bom:2.1-groovy-3.0")
 	testImplementation "org.spockframework:spock-core"
+	testImplementation "org.spockframework:spock-spring"
 
 	// linter
 	implementation group: 'org.ec4j.linters', name: 'editorconfig-linters', version: '0.2.1'
@@ -52,10 +54,20 @@ dependencies {
 }
 
 test {
+	maxParallelForks 3
 	outputs.dir snippetsDir
 	useJUnitPlatform()
-	testLogging {
-		events "passed", "skipped", "failed"
+	filter {
+		excludeTestsMatching('**IT')
+	}
+}
+
+task integrationTest(type: Test) {
+	maxParallelForks 3
+	useJUnitPlatform()
+	filter {
+		includeTestsMatching('**IT')
+		excludeTestsMatching('**Test')
 	}
 }
 
