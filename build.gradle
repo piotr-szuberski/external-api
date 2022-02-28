@@ -6,10 +6,11 @@ plugins {
   id 'groovy'
   id "com.diffplug.spotless" version "6.3.0"
   id "io.freefair.lombok" version "6.4.1"
+  id 'pl.allegro.tech.build.axion-release' version '1.13.6'
 }
 
 group = 'com.pet.project.external.api'
-version = '0.0.1-SNAPSHOT'
+version = scmVersion.version
 sourceCompatibility = '17'
 
 check.dependsOn spotlessApply
