@@ -1,11 +1,11 @@
 plugins {
-	id 'org.springframework.boot' version '2.6.4'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'org.asciidoctor.convert' version '1.5.8'
-	id 'java'
-	id 'groovy'
-	id "com.diffplug.spotless" version "6.3.0"
-	id "io.freefair.lombok" version "6.4.1"
+  id 'org.springframework.boot' version '2.6.4'
+  id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+  id 'org.asciidoctor.convert' version '1.5.8'
+  id 'java'
+  id 'groovy'
+  id "com.diffplug.spotless" version "6.3.0"
+  id "io.freefair.lombok" version "6.4.1"
 }
 
 group = 'com.pet.project.external.api'
@@ -15,80 +15,97 @@ sourceCompatibility = '17'
 check.dependsOn spotlessApply
 
 repositories {
-	mavenCentral()
-	maven { url 'https://repo.spring.io/milestone' }
-	maven { url 'https://repo.spring.io/snapshot' }
+  mavenCentral()
+  maven { url 'https://repo.spring.io/milestone' }
+  maven { url 'https://repo.spring.io/snapshot' }
 }
 
 ext {
-	set('snippetsDir', file("build/generated-snippets"))
+  set('snippetsDir', file("build/generated-snippets"))
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'org.springframework.boot:spring-boot-starter-validation'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
 
-	// util
-	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+  // util
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 
-	// spock
-	testImplementation "org.codehaus.groovy:groovy:3.0.9"
-	testImplementation 'org.codehaus.groovy:groovy-json:3.0.9'
-	testImplementation platform("org.spockframework:spock-bom:2.1-groovy-3.0")
-	testImplementation "org.spockframework:spock-core"
-	testImplementation "org.spockframework:spock-spring"
+  // spock
+  testImplementation "org.codehaus.groovy:groovy:3.0.9"
+  testImplementation 'org.codehaus.groovy:groovy-json:3.0.9'
+  testImplementation platform("org.spockframework:spock-bom:2.1-groovy-3.0")
+  testImplementation "org.spockframework:spock-core"
+  testImplementation "org.spockframework:spock-spring"
 
-	// linter
-	implementation group: 'org.ec4j.linters', name: 'editorconfig-linters', version: '0.2.1'
+  // linter
+  implementation group: 'org.ec4j.linters', name: 'editorconfig-linters', version: '0.2.1'
 
-	//lombok
-	compileOnly 'org.projectlombok:lombok:1.18.22'
-	annotationProcessor 'org.projectlombok:lombok:1.18.22'
+  //lombok
+  compileOnly 'org.projectlombok:lombok:1.18.22'
+  annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-	// jackson
-	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.13.1'
+  // jackson
+  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.13.1'
 }
 
 test {
-	maxParallelForks 3
-	outputs.dir snippetsDir
-	useJUnitPlatform()
-	filter {
-		excludeTestsMatching('**IT')
-	}
+  maxParallelForks 3
+  outputs.dir snippetsDir
+  useJUnitPlatform()
+  filter {
+    excludeTestsMatching('**IT')
+  }
 }
 
 task integrationTest(type: Test) {
-	maxParallelForks 3
-	useJUnitPlatform()
-	filter {
-		includeTestsMatching('**IT')
-		excludeTestsMatching('**Test')
-	}
+  maxParallelForks 3
+  useJUnitPlatform()
+  filter {
+    includeTestsMatching('**IT')
+    excludeTestsMatching('**Test')
+  }
 }
 
 tasks.named('asciidoctor') {
-	inputs.dir snippetsDir
-	dependsOn test
+  inputs.dir snippetsDir
+  dependsOn test
 }
 
 spotless {
-	java {
-		importOrder()
-		removeUnusedImports()
-		googleJavaFormat().reflowLongStrings()
-	}
-	groovy {
-		importOrder()
-		excludeJava()
-		greclipse()
-	}
-	groovyGradle {
-		target '*.gradle'
-		greclipse()
-	}
+  java {
+    importOrder()
+    removeUnusedImports()
+    trimTrailingWhitespace()
+    googleJavaFormat().reflowLongStrings()
+    endWithNewline()
+  }
+  groovy {
+    importOrder()
+    excludeJava()
+    greclipse()
+    indentWithSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+  groovyGradle {
+    target '*.gradle'
+    greclipse()
+    indentWithSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+  format 'misc', {
+    target fileTree('.') {
+      include '**/*.md', '**/.gitignore'
+      exclude '**/build/**', '**/build-*/**'
+    }
+    trimTrailingWhitespace()
+    indentWithSpaces(2)
+    endWithNewline()
+  }
 }
